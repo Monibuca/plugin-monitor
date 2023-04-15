@@ -43,6 +43,12 @@ type MonitorSuber struct {
 	dir      string
 }
 
+func (r *MonitorSuber) Start(streamPath string) {
+	if Engine.Subscribe(streamPath,r) == nil {
+		r.SubPulse()
+	}
+}
+
 func (r *MonitorSuber) OnEvent(event any) {
 	switch v := event.(type) {
 	case PulseEvent:
@@ -112,9 +118,7 @@ func (conf *MonitorConfig) OnEvent(event any) {
 		suber.subfp = make(map[ISubscriber]*os.File)
 		suber.tracks = make(map[common.Track]*os.File)
 		suber.IsInternal = true
-		if Engine.Subscribe(v.Target.Path, &suber) == nil {
-			suber.SubPulse()
-		}
+		go suber.Start(v.Target.Path)
 	case SEpublish:
 		appendYaml(streams[v.Target].fp, map[string]any{"time": v.Time.UnixMilli(), "event": "publish", "type": v.Target.GetType()})
 	case SErepublish:
