@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	_ "embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -44,7 +45,7 @@ type MonitorSuber struct {
 }
 
 func (r *MonitorSuber) Start(streamPath string) {
-	if Engine.Subscribe(streamPath,r) == nil {
+	if Engine.Subscribe(streamPath, r) == nil {
 		r.SubPulse()
 	}
 }
@@ -82,7 +83,11 @@ func (r *MonitorSuber) OnEvent(event any) {
 	}
 }
 
+//go:embed default.yaml
+var defaultYaml DefaultYaml
+
 type MonitorConfig struct {
+	DefaultYaml
 	config.HTTP
 	config.Subscribe
 	Path       string `default:"monitor"` // 存储路径
@@ -91,8 +96,10 @@ type MonitorConfig struct {
 	today      string
 }
 
-var conf MonitorConfig
-var MonitorPlugin = InstallPlugin(&conf)
+var conf = &MonitorConfig{
+	DefaultYaml: defaultYaml,
+}
+var MonitorPlugin = InstallPlugin(conf)
 var streams map[*Stream]*MonitorSuber
 
 func (conf *MonitorConfig) OnEvent(event any) {
@@ -117,7 +124,6 @@ func (conf *MonitorConfig) OnEvent(event any) {
 		suber.fp = conf.OpenYaml(suber.dir, "stream")
 		suber.subfp = make(map[ISubscriber]*os.File)
 		suber.tracks = make(map[common.Track]*os.File)
-		suber.IsInternal = true
 		go suber.Start(v.Target.Path)
 	case SEpublish:
 		appendYaml(streams[v.Target].fp, map[string]any{"time": v.Time.UnixMilli(), "event": "publish", "type": v.Target.GetType()})
