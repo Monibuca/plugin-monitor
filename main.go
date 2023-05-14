@@ -45,7 +45,7 @@ type MonitorSuber struct {
 }
 
 func (r *MonitorSuber) Start(streamPath string) {
-	if Engine.Subscribe(streamPath, r) == nil {
+	if MonitorPlugin.Subscribe(streamPath, r) == nil {
 		r.SubPulse()
 	}
 }
@@ -69,10 +69,10 @@ func (r *MonitorSuber) OnEvent(event any) {
 				Delay: map[string]uint32{},
 			}
 			suber := sub.GetSubscriber()
-			if suber.AudioReader.Track != nil {
+			if suber.AudioReader != nil {
 				snap.Delay[suber.AudioReader.Track.GetBase().Name] = suber.AudioReader.Delay
 			}
-			if suber.VideoReader.Track != nil {
+			if suber.VideoReader != nil {
 				snap.Delay[suber.VideoReader.Track.GetBase().Name] = suber.VideoReader.Delay
 			}
 			appendYaml(r.subfp[sub], snap)
