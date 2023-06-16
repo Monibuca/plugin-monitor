@@ -54,12 +54,11 @@ func (r *MonitorSuber) OnEvent(event any) {
 	switch v := event.(type) {
 	case PulseEvent:
 		r.Stream.Tracks.Range(func(k string, t common.Track) {
-			track := t.GetBase()
 			appendYaml(r.tracks[t], TrackSnap{
 				Time:   v.Time.UnixMilli(),
-				BPS:    track.BPS,
-				FPS:    track.FPS,
-				Drops:  track.Drops,
+				BPS:    t.GetBPS(),
+				FPS:    t.GetFPS(),
+				Drops:  t.GetDrops(),
 				RBSize: t.GetRBSize(),
 			})
 		})
@@ -70,15 +69,15 @@ func (r *MonitorSuber) OnEvent(event any) {
 			}
 			suber := sub.GetSubscriber()
 			if suber.AudioReader != nil {
-				snap.Delay[suber.AudioReader.Track.GetBase().Name] = suber.AudioReader.Delay
+				snap.Delay[suber.AudioReader.Track.GetName()] = suber.AudioReader.Delay
 			}
 			if suber.VideoReader != nil {
-				snap.Delay[suber.VideoReader.Track.GetBase().Name] = suber.VideoReader.Delay
+				snap.Delay[suber.VideoReader.Track.GetName()] = suber.VideoReader.Delay
 			}
 			appendYaml(r.subfp[sub], snap)
 		})
 	case common.Track:
-		r.tracks[v] = conf.OpenYaml(r.dir, "track", v.GetBase().Name)
+		r.tracks[v] = conf.OpenYaml(r.dir, "track", v.GetName())
 		// appendYaml(r.fp, map[string]any{"time": time.Now().UnixMilli(), "event": "publish", "type": v.Target.GetType()})
 	}
 }
