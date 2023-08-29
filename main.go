@@ -131,6 +131,7 @@ func (conf *MonitorConfig) OnEvent(event any) {
 	case SEclose:
 		monitor := streams[v.Target]
 		appendYaml(monitor.fp, map[string]any{"time": v.Time.UnixMilli(), "event": "close", "action": v.Action})
+		delete(streams, v.Target)
 	case SEwaitClose:
 		monitor := streams[v.Target]
 		appendYaml(monitor.fp, map[string]any{"time": v.Time.UnixMilli(), "event": "waitclose", "action": v.Action})
