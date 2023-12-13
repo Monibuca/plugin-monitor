@@ -86,19 +86,16 @@ func (r *MonitorSuber) OnEvent(event any) {
 var defaultYaml DefaultYaml
 
 type MonitorConfig struct {
-	DefaultYaml
 	config.HTTP
 	config.Subscribe
-	Path       string `default:"monitor"` // 存储路径
+	Path       string `default:"monitor" desc:"存储路径"` // 存储路径
 	indexFP    *os.File
 	fileServer http.Handler
 	today      string
 }
 
-var conf = &MonitorConfig{
-	DefaultYaml: defaultYaml,
-}
-var MonitorPlugin = InstallPlugin(conf)
+var conf MonitorConfig
+var MonitorPlugin = InstallPlugin(&conf, defaultYaml)
 var streams map[*Stream]*MonitorSuber
 
 func (conf *MonitorConfig) OnEvent(event any) {
